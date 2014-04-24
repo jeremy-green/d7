@@ -145,9 +145,8 @@ function d7_preprocess_views_view(&$vars) {
  * @param $css
  *   An array of all CSS items being requested on the page.
  */
-/* -- Delete this line if you want to use this function
 function d7_css_alter(&$css) {
-
+  print_r($css);
 }
 // */
 
