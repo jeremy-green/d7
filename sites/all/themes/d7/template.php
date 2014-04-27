@@ -36,9 +36,17 @@ function d7_modernizr_load_alter(&$load) {
  * @param $vars
  *   An array of variables to pass to the theme template.
  */
-/* -- Delete this line if you want to use this function
 function d7_preprocess_html(&$vars) {
-
+  if (theme_get_setting('d7_development') == 1) {
+    $basehold = array(
+      '#tag' => 'link',
+      '#attributes' => array(
+        'href' => '//basehold.it/24',
+        'rel' => 'stylesheet',
+      ),
+    );
+   drupal_add_html_head($basehold, 'basehold.it');
+  }
 }
 
 /**
@@ -146,7 +154,12 @@ function d7_preprocess_views_view(&$vars) {
  *   An array of all CSS items being requested on the page.
  */
 function d7_css_alter(&$css) {
-  print_r($css);
+  if (theme_get_setting('d7_development')) {
+    $theme_path = drupal_get_path('theme', 'd7');
+    if (isset($css[$theme_path . '/css/main.min.css'])) {
+      $css[$theme_path . '/css/main.min.css']['data'] = $theme_path . '/css/main.css';
+    }
+  }
 }
 // */
 
@@ -156,8 +169,20 @@ function d7_css_alter(&$css) {
  * @param $js
  *   An array of all JavaScript being presented on the page.
  */
-/* -- Delete this line if you want to use this function
 function d7_js_alter(&$js) {
-
+  if (theme_get_setting('d7_development')) {
+    $theme_path = drupal_get_path('theme', 'd7');
+    if (isset($js[$theme_path . '/js/main.min.js'])) {
+      $js[$theme_path . '/js/main.min.js']['data'] = $theme_path . '/js/main.js';
+    }
+    //check if modernizr and libraries is enabled
+    /*if (module_exists('modernizr') && module_exists('libraries')) {
+      //get the library path
+      $modernizr_path = libraries_get_path('modernizr');
+      if (isset($js[$modernizr_path . '/modernizr.min.js'])) {
+        //$js[$modernizr_path . '/modernizr.min.js']['data'] = $modernizr_path . '/modernizr.js';
+      }
+    }*/
+  }
 }
 // */
