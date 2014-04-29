@@ -37,7 +37,10 @@ function d7_modernizr_load_alter(&$load) {
  *   An array of variables to pass to the theme template.
  */
 function d7_preprocess_html(&$vars) {
+  $html_classes_array = array();
+
   if (theme_get_setting('d7_development') == 1) {
+    $html_classes_array[] = 'development';
     $basehold = array(
       '#tag' => 'link',
       '#attributes' => array(
@@ -45,8 +48,10 @@ function d7_preprocess_html(&$vars) {
         'rel' => 'stylesheet',
       ),
     );
-   drupal_add_html_head($basehold, 'basehold.it');
+    drupal_add_html_head($basehold, 'basehold.it');
   }
+
+  $vars['html_classes'] = implode(' ', array_filter($html_classes_array));
 }
 
 /**

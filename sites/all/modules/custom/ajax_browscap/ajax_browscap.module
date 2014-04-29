@@ -1,0 +1,101 @@
+<?php
+/**
+ * @file
+ * Module for Ajax Browscap.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function ajax_browscap_menu() {
+  $items['ajax-browscap'] = array(
+    'title' => 'Ajax Browscap',
+    'page callback' => 'ajax_browscap_json',
+    'access arguments' => array('access content'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['admin/config/system/ajax-browscap'] = array(
+    'title' => 'Ajax Browscap',
+    'description' => 'Manage the Ajax Browscap settings.',
+    'access arguments' => array('administer ajax browscap'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ajax_browscap_settings'),
+  );
+  return $items;
+}
+
+function ajax_browscap_json() {
+  if (module_exists('browscap') && function_exists('browscap_get_browser')) {
+    $settings = variable_get('ajax_browscap_settings', array());
+    $browser = browscap_get_browser();
+    $output = array();
+    foreach ($settings as $key => $value) {
+      if (isset($browser[$key])) {
+        $output[$key] = $browser[$key];
+      }
+    }
+    drupal_json_output($output);
+    drupal_exit();
+  }
+}
+
+/**
+ * Implements hook_preprocess_html()
+ */
+function ajax_browscap_preprocess_html(&$vars) {
+  $settings = variable_get('ajax_browscap_settings', array());
+  if ($settings['ajax_browscap_add_js']) {
+    drupal_add_js(drupal_get_path('module', 'ajax_browscap') . '/js/ajax_browscap.js');
+  }
+}
+
+function ajax_browscap_settings() {
+  $settings = variable_get('ajax_browscap_settings', array());
+  $form = array();
+  $form['#tree'] = TRUE;
+
+  $options = browscap_get_browser();
+  unset($options['useragent'], $options['browser_name_pattern']);
+
+  $form['ajax_browscap_add_js'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include Javascript'),
+    '#description' => t('Include the default javascript file that will add the classes to the &lt;html&gt; tag.'),
+    '#default_value' => !empty($settings['ajax_browscap_add_js']) ? 1 : 0
+  );
+  $form['ajax_browscap'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Browser Properties'),
+    '#description' => t('More information can be found at whatever'),
+  );
+  foreach ($options as $option => $value) {
+    $form['ajax_browscap'][$option] = array(
+      '#type' => 'checkbox',
+      '#title' => t(ucwords(implode(' ', explode('_', $option)))),
+      '#description' => '<em>' . t($value) . '</em>',
+      '#default_value' => !empty($settings[$option]) ? 1 : 0
+    );
+  }
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Save Configuration'
+  );
+
+  return $form;
+}
+
+function ajax_browscap_settings_submit(&$form, &$form_state) {
+  $values = $form_state['values']['ajax_browscap'];
+  $settings = array();
+
+  foreach ($values as $key => $value) {
+    if ($value) {
+      $settings[$key] = $key;
+    }
+  }
+
+  $settings['ajax_browscap_add_js'] = $form_state['values']['ajax_browscap_add_js'];
+
+  variable_set('ajax_browscap_settings', $settings);
+}
